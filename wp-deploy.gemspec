@@ -1,8 +1,9 @@
 Gem::Specification.new do |s|
   s.name        = 'wp-deploy'
   s.version     = '2.0.2'
+  s.executables << 'wp-deploy'
   s.date        = '2015-05-13'
-  s.summary     = "wp-deploy – Easily deploy wordpress projects"
+  s.summary     = "wp-deploy – Easily deploy WordPress projects"
   s.description = "A framework for deploying WordPress sites using Capistrano 3"
   s.authors     = ["Aaron Thomas", "Luke Whitehouse"]
   s.email       = ["a.thomas@mixd.co.uk", "l.whitehouse@mixd.co.uk"]
