@@ -1,4 +1,6 @@
 *.gem
+pkg/*
+.bundle
 *.rbc
 Gemfile.lock
 rdoc

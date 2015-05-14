@@ -1,7 +1,0 @@
-#!/usr/bin/env ruby
-
-require 'wp-deploy'
-
-puts "-" * 80
-puts "Welcome to wp-deploy!"
-puts "-" * 80
