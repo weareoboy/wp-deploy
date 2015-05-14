@@ -1,3 +1,5 @@
 #!/usr/bin/env ruby
 
-puts `bundle exec rake #{ARGV.join(" ")}`
+require "capistrano-wp-deploy/cli"
+
+WpdCLI.start(ARGV)

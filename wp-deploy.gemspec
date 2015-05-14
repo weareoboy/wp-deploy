@@ -14,4 +14,5 @@ Gem::Specification.new do |s|
   s.license     = 'MIT'
 
   s.add_runtime_dependency 'capistrano', '~> 3.4'
+  s.add_runtime_dependency 'thor', '~> 0.19.1'
 end
