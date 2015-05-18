@@ -23,8 +23,7 @@ Welcome to wp-deploy!
 
 To get started, we're going to ask a few questions to configure WordPress and
 your environments. If you would rather do this later, you can manually populate
-the .yml files in config/ and run `bundle exec wpdeploy config` to apply the
-settings.
+the .yml files in config/
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––\n\n", :green
 
         databaseYaml = ""
@@ -58,29 +57,84 @@ settings.
         end
 
         create_file "config/database.yml", databaseYaml
+        say "\n\n"
 
         # Create a settings.yml
-        if yes?("Do you wish to set up your WordPress settings now?", :blue)
+        if yes?("Do you wish to configure your WordPress settings now?", :blue)
             wpuser = ask("What username do you want to log into WordPress with? (a random password will be created)", :blue)
             wpemail = ask("What email address should be associated with your WordPress user account?", :blue)
             wpsitename = ask("What is the name of your new website?", :blue)
             gitrepo = ask("What is the URL of your git repository? (e.g. git@github.com:Mixd/wp-deploy.git)", :blue)
-            say "\n\n"
+            say "\n"
 
              settingsYaml =
 "wp_user: '#{wpuser}'
 wp_email: '#{wpemail}'
 wp_sitename: '#{wpsitename}'
-git_repo: '#{gitrepo}'/n"
+git_repo: '#{gitrepo}'\n"
         else
             say "WordPress configuration skipped\n\n", :yellow
-            settingsYaml = "wp_user: 'your_username'
+            settingsYaml =
+"wp_user: 'your_username'
 wp_email: 'you@example.com'
 wp_sitename: 'my awesome website'
-password: 'example'\n"
+git_repo: 'git@github.com:username/your-repo.git'\n"
         end
 
         create_file "config/settings.yml", settingsYaml
+        say "\n\n"
+
+        environmentsYaml = ""
+        environments = ['staging', 'production']
+
+        # Create a section within environments.yml for each remote environment
+        environments.each do |env|
+            if env == 'staging'
+                branch = 'development'
+            else
+                branch = 'master'
+            end
+
+            if yes?("Do you wish to configure your #{env} SSH details now?", :blue)
+                stageurl = ask("What is the full URL of your remote environment? (e.g. http://www.example.com)", :blue)
+                sshserver = ask("What is the server address? (this can be an IP or domain)", :blue)
+                sshuser = ask("What user should we connect to this server as?", :blue)
+                sshpath = ask("Where should we deploy to on this server? (e.g. /var/www/vhosts/mysite.com/httpdocs)", :blue)
+                say "\n"
+
+                environmentsYaml +=
+"#{env}:
+  stage_url: '#{stageurl}'
+  server: '#{sshserver}'
+  user: '#{sshuser}'
+  deploy_to: '#{sshpath}'
+  branch: '#{branch}'\n"
+
+            else
+                say "remote #{env} environment configuration skipped\n\n", :yellow
+                environmentsYaml +=
+"#{env}:
+  stage_url: 'http://www.example.com'
+  server: 'XXX.XXX.XX.XXX'
+  user: 'SSHUSER'
+  deploy_to: '/deploy/to/path'
+  branch: '#{branch}'\n"
+            end
+        end
+
+        create_file "config/environments.yml", environmentsYaml
+        say "\n\n"
+
+        say "
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+Your project is now ready to be installed.
+
+Run `bundle exec wpdeploy install` to install WordPress using the settings you
+have provided.
+
+If you ever need to update your settings after installation, just edit the .yml
+files in config/ and run `bundle exec wpdeploy config` to apply them.
+–––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––", :green
 
     end
 
@@ -93,7 +147,7 @@ password: 'example'\n"
             exit
         end
 
-        # Create base WordPress/wp-deploy files
+        # Create base WordPress/Capistrano files
         say "wp-deploy: Setting up a new wp-deploy project", :green
         directory "."
 
@@ -116,8 +170,6 @@ password: 'example'\n"
 
         say "
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-wp-deploy:
-
 Good to go! Now populate your `database.yml` and `settings.yml` and
 run `bundle exec wpdeploy setup`
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––", :green
