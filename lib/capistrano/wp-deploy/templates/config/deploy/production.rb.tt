@@ -3,15 +3,15 @@
 ############################################
 
 set :stage, :production
-set :stage_url, "http://www.example.com"
-server "XXX.XXX.XX.XXX", user: "SSHUSER", roles: %w{web app db}
-set :deploy_to, "/deploy/to/path"
+set :stage_url, ENVSETTINGS['production']['stage_url']
+server ENVSETTINGS['production']['server'], user: ENVSETTINGS['production']['user'], roles: %w{web app db}
+set :deploy_to, ENVSETTINGS['production']['deploy_to']
 
 ############################################
 # Setup Git
 ############################################
 
-set :branch, "master"
+set :branch, ENVSETTINGS['production']['branch']
 
 ############################################
 # Extra Settings
