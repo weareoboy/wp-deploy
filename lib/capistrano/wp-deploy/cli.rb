@@ -10,24 +10,27 @@ class WpdCLI < Thor
     desc "init", "Initialises the WordPress project"
     def init
 
+        # Check if the project needs initialising
         if Dir.exist?('config')
             say "wp-deploy: Looks like you've already initialised this project! If you're trying to update your configuration using the settings in your .yml files, try running `bundle exec wpdeploy config` first.", :red
             exit
         end
 
+        # Print welcome message
         say "
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 Welcome to wp-deploy!
 
-To get started, we're going to ask a few questions to configure your
-environments. If you would rather do this later, you can manually populate
-`config/database.yml` and `config/settings.yml` and run `bundle exec wpdeploy
-config` to apply the settings.
+To get started, we're going to ask a few questions to configure WordPress and
+your environments. If you would rather do this later, you can manually populate
+the .yml files in config/ and run `bundle exec wpdeploy config` to apply the
+settings.
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––\n\n", :green
 
         databaseYaml = ""
         environments = ['local', 'staging', 'production']
 
+        # Create a section within database.yml for each environment
         environments.each do |env|
             if yes?("Do you wish to configure your #{env} database now?", :blue)
                 dbhostname = ask("What hostname should we use? (usually localhost)", :blue)
@@ -38,23 +41,46 @@ config` to apply the settings.
 
                 databaseYaml +=
 "#{env}:
-  host: #{dbhostname}
-  database: #{dbname}
-  username: #{dbuser}
+  host: '#{dbhostname}'
+  database: '#{dbname}'
+  username: '#{dbuser}'
   password: '#{dbpass}'\n"
             else
                 say "#{env} configuration skipped\n\n", :yellow
                 databaseYaml +=
 "#{env}:
-  host: localhost
-  database: example
-  username: example
+  host: 'localhost'
+  database: 'example'
+  username: 'example'
   password: 'example'\n"
 
             end
         end
 
         create_file "config/database.yml", databaseYaml
+
+        # Create a settings.yml
+        if yes?("Do you wish to set up your WordPress settings now?", :blue)
+            wpuser = ask("What username do you want to log into WordPress with? (a random password will be created)", :blue)
+            wpemail = ask("What email address should be associated with your WordPress user account?", :blue)
+            wpsitename = ask("What is the name of your new website?", :blue)
+            gitrepo = ask("What is the URL of your git repository? (e.g. git@github.com:Mixd/wp-deploy.git)", :blue)
+            say "\n\n"
+
+             settingsYaml =
+"wp_user: '#{wpuser}'
+wp_email: '#{wpemail}'
+wp_sitename: '#{wpsitename}'
+git_repo: '#{gitrepo}'/n"
+        else
+            say "WordPress configuration skipped\n\n", :yellow
+            settingsYaml = "wp_user: 'your_username'
+wp_email: 'you@example.com'
+wp_sitename: 'my awesome website'
+password: 'example'\n"
+        end
+
+        create_file "config/settings.yml", settingsYaml
 
     end
 
