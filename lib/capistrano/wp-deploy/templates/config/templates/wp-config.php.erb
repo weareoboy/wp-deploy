@@ -8,12 +8,14 @@
   define('WPLANG', '');
   define('AUTOMATIC_UPDATER_DISABLED', true);
 
+<%= secret_keys %>
+
   $table_prefix  = 'wp_';
 
   define('WP_HOME','<%= wp_siteurl %>');
   define('WP_SITEURL','<%= wp_siteurl %>/wordpress');
 
-  define('WP_CONTENT_URL', 'dbfgnfg/content');
+  define('WP_CONTENT_URL', '<%= wp_siteurl %>/content');
   define('WP_CONTENT_DIR', realpath(dirname(__DIR__) . '/content'));
 
   if ( !defined('ABSPATH') ){
@@ -21,5 +23,3 @@
   }
 
   require_once(ABSPATH . 'wp-settings.php');
-
-<%= secret_keys %>

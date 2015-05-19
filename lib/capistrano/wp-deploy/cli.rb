@@ -129,17 +129,39 @@ files in config/ and run `bundle exec wpdeploy config` to apply them.
             git commit -m "Set up wp-deploy"
         ')
 
+        databaseYaml = YAML::load_file('config/database.yml')
+        settingsYaml = YAML::load_file('config/settings.yml')
+
         # Create wp-config.php
-        database = YAML::load_file('config/database.yml')['local']
-        wp_siteurl = YAML::load_file('config/settings.yml')['local_url']
+        database = databaseYaml['local']
+        wp_siteurl = settingsYaml['local_url']
         secret_keys = run("curl -s -k https://api.wordpress.org/secret-key/1.1/salt", :capture => true)
         db_config = ERB.new(File.read('config/templates/wp-config.php.erb')).result(binding)
         File.open("wp-config.php", 'w') {|f| f.write(db_config) }
 
+        # Setup vars for WP install
+        title = settingsYaml['wp_sitename']
+        user = settingsYaml['wp_user']
+        email = settingsYaml['wp_email']
+
+        # Generate a random password
+        o = [('a'..'z'), ('A'..'Z')].map { |i| i.to_a }.flatten
+        password = (0...18).map { o[rand(o.length)] }.join
+
+        # Install WordPress
+        wpinstall = run("bundle exec wp core install --url='#{wp_siteurl}' --title='#{title}' --admin_user='#{user}' --admin_password='#{password}' --admin_email='#{email}'")
+
+        if wpinstall == false
+            say_status("error", "wp-deploy could not connect to your database. Please check your database.yml. If you are using MAMP, please refer to the wp-deploy docs for known issues.", :red)
+        end
+
         say "
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-Good to go! Now populate your `database.yml` and `settings.yml` and
-run `bundle exec wpdeploy setup`
+WordPress has now been installed locally! Here are your login details:
+
+Username:       #{user}
+Password:       #{password}
+Log in at:      #{wp_siteurl}/wordpress/wp-admin/
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––", :green
 
     end
