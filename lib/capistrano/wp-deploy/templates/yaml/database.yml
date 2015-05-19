@@ -1,0 +1,15 @@
+local:
+  host: ''
+  database: ''
+  username: ''
+  password: ''
+staging:
+  host: ''
+  database: ''
+  username: ''
+  password: ''
+production:
+  host: ''
+  database: ''
+  username: ''
+  password: ''

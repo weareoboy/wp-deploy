@@ -1,0 +1,12 @@
+staging:
+  stage_url: ''
+  server: ''
+  user: ''
+  deploy_to: ''
+  branch: 'development'
+production:
+  stage_url: ''
+  server: ''
+  user: ''
+  deploy_to: ''
+  branch: 'master'

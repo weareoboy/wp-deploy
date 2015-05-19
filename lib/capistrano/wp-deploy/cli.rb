@@ -1,4 +1,5 @@
 require "thor"
+require "yaml"
 
 class WpdCLI < Thor
     include Thor::Actions
@@ -21,111 +22,67 @@ class WpdCLI < Thor
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 Welcome to wp-deploy!
 
-To get started, we're going to ask a few questions to configure WordPress and
-your environments. If you would rather do this later, you can manually populate
-the .yml files in config/
+To get started, you can configure wp-deploy in one of two ways:
+
+- Via terminal prompts (takes around 5 minutes)
+- Manually enter your details into the configuration files .yml which will be
+  generated in the config/ directory.
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––\n\n", :green
 
-        databaseYaml = ""
-        environments = ['local', 'staging', 'production']
+        setup_method = ask("How would you like to configure wp-deploy?:", :blue, :limited_to => ["prompt", "manual"])
+        say "\n"
 
-        # Create a section within database.yml for each environment
-        environments.each do |env|
-            if yes?("Do you wish to configure your #{env} database now?", :blue)
-                dbhostname = ask("What hostname should we use? (usually localhost)", :blue)
-                dbname = ask("What is the name of your database?", :blue)
-                dbuser = ask("What username should we connect to the database with?", :blue)
-                dbpass = ask("What is the password for this user? ", :blue, :echo => false)
+        # Create blank yaml files
+        directory "yaml", "config"
+        say "\n"
+
+        # If the user would rather be prompted for details
+        if setup_method == "prompt"
+
+            # Load in yaml files for populating
+            databaseYaml = YAML::load_file('config/database.yml')
+            settingsYaml = YAML::load_file('config/settings.yml')
+            environmentsYaml = YAML::load_file('config/environments.yml')
+
+            environments = ['local', 'staging', 'production']
+
+            # Prompt for database details
+            environments.each do |env|
+                say("Configure your #{env} database", :bold)
+                databaseYaml[env]['host'] = ask("What hostname should we use? (usually localhost):", :blue)
+                databaseYaml[env]['database'] = ask("What is the name of your database?:", :blue)
+                databaseYaml[env]['username'] = ask("What username should we connect to the database with?:", :blue)
+                databaseYaml[env]['password'] = ask("What is the password for this user?: ", :blue, :echo => false)
                 say "\n\n"
-
-                databaseYaml +=
-"#{env}:
-  host: '#{dbhostname}'
-  database: '#{dbname}'
-  username: '#{dbuser}'
-  password: '#{dbpass}'\n"
-            else
-                say "#{env} configuration skipped\n\n", :yellow
-                databaseYaml +=
-"#{env}:
-  host: 'localhost'
-  database: 'example'
-  username: 'example'
-  password: 'example'\n"
-
             end
-        end
 
-        create_file "config/database.yml", databaseYaml
-        say "\n\n"
-
-        # Create a settings.yml
-        if yes?("Do you wish to configure your WordPress settings now?", :blue)
-            wpuser = ask("What username do you want to log into WordPress with? (a random password will be created)", :blue)
-            wpemail = ask("What email address should be associated with your WordPress user account?", :blue)
-            wpsitename = ask("What is the name of your new website?", :blue)
-            gitrepo = ask("What is the URL of your git repository? (e.g. git@github.com:Mixd/wp-deploy.git)", :blue)
+            # Prompt for WordPress details
+            say("Configure your WordPress settings", :bold)
+            settingsYaml['wp_user'] = ask("What username do you want to log into WordPress with? (a random password will be created):", :blue)
+            settingsYaml['wp_email'] = ask("What email address should be associated with your WordPress user account?:", :blue)
+            settingsYaml['wp_sitename'] = ask("What is the name of your new website?:", :blue)
+            settingsYaml['git_repo'] = ask("What is the URL of your git repository? (e.g. git@github.com:Mixd/wp-deploy.git):", :blue)
+            settingsYaml['local_url'] = ask("What URL will you use to access your local host? (e.g. http://yoursite.dev):", :blue)
             say "\n"
 
-             settingsYaml =
-"wp_user: '#{wpuser}'
-wp_email: '#{wpemail}'
-wp_sitename: '#{wpsitename}'
-git_repo: '#{gitrepo}'\n"
-        else
-            say "WordPress configuration skipped\n\n", :yellow
-            settingsYaml =
-"wp_user: 'your_username'
-wp_email: 'you@example.com'
-wp_sitename: 'my awesome website'
-git_repo: 'git@github.com:username/your-repo.git'\n"
-        end
+            environments = ['staging', 'production']
 
-        create_file "config/settings.yml", settingsYaml
-        say "\n\n"
-
-        environmentsYaml = ""
-        environments = ['staging', 'production']
-
-        # Create a section within environments.yml for each remote environment
-        environments.each do |env|
-            if env == 'staging'
-                branch = 'development'
-            else
-                branch = 'master'
-            end
-
-            if yes?("Do you wish to configure your #{env} SSH details now?", :blue)
-                stageurl = ask("What is the full URL of your remote environment? (e.g. http://www.example.com)", :blue)
-                sshserver = ask("What is the server address? (this can be an IP or domain)", :blue)
-                sshuser = ask("What user should we connect to this server as?", :blue)
-                sshpath = ask("Where should we deploy to on this server? (e.g. /var/www/vhosts/mysite.com/httpdocs)", :blue)
+            # Prompt for environment access details
+            environments.each do |env|
+                say("Configure your remote #{env} access", :bold)
+                environmentsYaml[env]['stage_url'] = ask("What is the full URL of your remote environment? (e.g. http://www.example.com):", :blue)
+                environmentsYaml[env]['server'] = ask("What is the server address? (this can be an IP or domain):", :blue)
+                environmentsYaml[env]['user'] = ask("What user should we connect to this server as?:", :blue)
+                environmentsYaml[env]['deploy_to'] = ask("Where should we deploy to on this server? (e.g. /var/www/vhosts/mysite.com/httpdocs):", :blue)
                 say "\n"
-
-                environmentsYaml +=
-"#{env}:
-  stage_url: '#{stageurl}'
-  server: '#{sshserver}'
-  user: '#{sshuser}'
-  deploy_to: '#{sshpath}'
-  branch: '#{branch}'\n"
-
-            else
-                say "remote #{env} environment configuration skipped\n\n", :yellow
-                environmentsYaml +=
-"#{env}:
-  stage_url: 'http://www.example.com'
-  server: 'XXX.XXX.XX.XXX'
-  user: 'SSHUSER'
-  deploy_to: '/deploy/to/path'
-  branch: '#{branch}'\n"
             end
-        end
 
-        create_file "config/environments.yml", environmentsYaml
-        say "\n\n"
+            # Write results to yaml files
+            File.open('config/database.yml', 'w') {|f| f.write databaseYaml.to_yaml }
+            File.open('config/settings.yml', 'w') {|f| f.write settingsYaml.to_yaml }
+            File.open('config/environments.yml', 'w') {|f| f.write environmentsYaml.to_yaml }
 
-        say "
+            say "
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 Your project is now ready to be installed.
 
@@ -135,6 +92,10 @@ have provided.
 If you ever need to update your settings after installation, just edit the .yml
 files in config/ and run `bundle exec wpdeploy config` to apply them.
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––", :green
+
+        else
+            say "Your config files are now in the /config directory. Populate them at your leisure then run `bundle exec wpdeploy install`.", :green
+        end
 
     end
 
@@ -149,7 +110,7 @@ files in config/ and run `bundle exec wpdeploy config` to apply them.
 
         # Create base WordPress/Capistrano files
         say "wp-deploy: Setting up a new wp-deploy project", :green
-        directory "."
+        directory ".", ".", :exclude_pattern => /yaml/
 
         # Initialise new git repo
         say "wp-deploy: Checking if we need a new git repo", :green
