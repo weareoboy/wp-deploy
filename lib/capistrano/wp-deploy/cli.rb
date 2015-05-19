@@ -129,6 +129,13 @@ files in config/ and run `bundle exec wpdeploy config` to apply them.
             git commit -m "Set up wp-deploy"
         ')
 
+        # Create wp-config.php
+        database = YAML::load_file('config/database.yml')['local']
+        wp_siteurl = YAML::load_file('config/settings.yml')['local_url']
+        secret_keys = run("curl -s -k https://api.wordpress.org/secret-key/1.1/salt", :capture => true)
+        db_config = ERB.new(File.read('config/templates/wp-config.php.erb')).result(binding)
+        File.open("wp-config.php", 'w') {|f| f.write(db_config) }
+
         say "
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 Good to go! Now populate your `database.yml` and `settings.yml` and
