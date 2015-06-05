@@ -18,7 +18,7 @@ class WpdCLI < Thor
             installpath = '.'
         end
 
-        say "Intalling wpdeploy in directory #{installpath}", :green
+        say "wp deploy: Intalling wpdeploy in directory #{installpath}", :green
 
         # Check if the project needs initialising
         if Dir.exist?(installpath + '/config')
@@ -36,6 +36,9 @@ To get started, you can configure wp-deploy in one of two ways:
 - Via terminal prompts (takes around 5 minutes)
 - Manually enter your details into the configuration files .yml which will be
   generated in the config/ directory.
+
+If you choose to install via prompts, you can skip any prompt and enter the
+details maunally later if you prefer.
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––\n\n", :green
 
         setup_method = ask("How would you like to configure wp-deploy?:", :blue, :limited_to => ["prompt", "manual"])
@@ -95,15 +98,15 @@ To get started, you can configure wp-deploy in one of two ways:
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 Your project is now ready to be installed.
 
-Run `bundle exec wpdeploy install` to install WordPress using the settings you
+Run `wpdeploy install` to install WordPress using the settings you
 have provided.
 
 If you ever need to update your settings after installation, just edit the .yml
-files in config/ and run `bundle exec wpdeploy config` to apply them.
+files in config/ and run `wpdeploy config` to apply them.
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––", :green
 
         else
-            say "Your config files are now in the /config directory. Populate them at your leisure then run `bundle exec wpdeploy install`.", :green
+            say "Your config files are now in the /config directory. Populate them at your leisure then run `wpdeploy install`.", :green
         end
 
     end
@@ -113,7 +116,7 @@ files in config/ and run `bundle exec wpdeploy config` to apply them.
 
         # Check if init has been run first
         unless Dir.exist?('config')
-            say "wp-deploy: Configuration files not found. Please run `bundle exec init` and set up your configuration files first.", :red
+            say "wp-deploy: Configuration files not found. Please run `wpdeploy init` and set up your configuration files first.", :red
             exit
         end
 
