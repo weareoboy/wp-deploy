@@ -8,11 +8,20 @@ class WpdCLI < Thor
         File.expand_path("../templates",__FILE__)
     end
 
-    desc "init", "Initialises the WordPress project"
-    def init
+    desc "init DIRECTORY", "Initialises the WordPress project in the given directory"
+    def init(path=nil)
+
+        # If user provided a path, set install directory, else install in current dir
+        if path
+            installpath = path
+        else
+            installpath = '.'
+        end
+
+        say "Intalling wpdeploy in directory #{installpath}", :green
 
         # Check if the project needs initialising
-        if Dir.exist?('config')
+        if Dir.exist?(installpath + '/config')
             say "wp-deploy: Looks like you've already initialised this project! If you're trying to update your configuration using the settings in your .yml files, try running `bundle exec wpdeploy config` first.", :red
             exit
         end
@@ -33,7 +42,7 @@ To get started, you can configure wp-deploy in one of two ways:
         say "\n"
 
         # Create blank yaml files
-        directory "yaml", "config"
+        directory "yaml", installpath + "/config"
         say "\n"
 
         # If the user would rather be prompted for details
@@ -78,9 +87,9 @@ To get started, you can configure wp-deploy in one of two ways:
             end
 
             # Write results to yaml files
-            File.open('config/database.yml', 'w') {|f| f.write databaseYaml.to_yaml }
-            File.open('config/settings.yml', 'w') {|f| f.write settingsYaml.to_yaml }
-            File.open('config/environments.yml', 'w') {|f| f.write environmentsYaml.to_yaml }
+            File.open(installpath + '/config/database.yml', 'w') {|f| f.write databaseYaml.to_yaml }
+            File.open(installpath + '/config/settings.yml', 'w') {|f| f.write settingsYaml.to_yaml }
+            File.open(installpath + '/config/environments.yml', 'w') {|f| f.write environmentsYaml.to_yaml }
 
             say "
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
