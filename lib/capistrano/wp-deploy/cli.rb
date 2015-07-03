@@ -145,13 +145,13 @@ files in config/ and run `wpdeploy config` to apply them.
         settingsYaml = YAML::load_file('config/settings.yml')
 
         # Create wp-config.php
-        database = databaseYaml['local']
-        wp_siteurl = settingsYaml['local_url']
+        currentEnv = 'local'
         secret_keys = run("curl -s -k https://api.wordpress.org/secret-key/1.1/salt", :capture => true)
         db_config = ERB.new(File.read('config/templates/wp-config.php.erb')).result(binding)
         File.open("wp-config.php", 'w') {|f| f.write(db_config) }
 
         # Setup vars for WP install
+        siteurl = settingsYaml['local_url']
         title = settingsYaml['wp_sitename']
         user = settingsYaml['wp_user']
         email = settingsYaml['wp_email']
@@ -161,20 +161,22 @@ files in config/ and run `wpdeploy config` to apply them.
         password = (0...18).map { o[rand(o.length)] }.join
 
         # Install WordPress
-        wpinstall = run("bundle exec wp core install --url='#{wp_siteurl}' --title='#{title}' --admin_user='#{user}' --admin_password='#{password}' --admin_email='#{email}'")
+        wpinstall = run("bundle exec wp core install --url='#{siteurl}' --title='#{title}' --admin_user='#{user}' --admin_password='#{password}' --admin_email='#{email}'")
 
         if wpinstall == false
             say_status("error", "wp-deploy could not connect to your database. Please check your database.yml. If you are using MAMP, please refer to the wp-deploy docs for known issues.", :red)
-        end
-
-        say "
+        else
+            say "
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 WordPress has now been installed locally! Here are your login details:
 
 Username:       #{user}
 Password:       #{password}
-Log in at:      #{wp_siteurl}/wordpress/wp-admin/
+Log in at:      #{siteurl}/wordpress/wp-admin/
 –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––", :green
+
+        end
+
 
     end
 
