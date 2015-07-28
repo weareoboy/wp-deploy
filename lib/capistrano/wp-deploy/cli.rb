@@ -191,7 +191,7 @@ Log in at:      #{siteurl}/wordpress/wp-admin/
         db_config = ERB.new(File.read('config/templates/wp-config.php.erb')).result(binding)
         File.open("wp-config.php", 'w') {|f| f.write(db_config) }
 
-        say_status("success", "Your database details have been updated.", :green)
+        say_status("success", "Your database details have been updated in your wp-config.php.", :green)
 
     end
 
