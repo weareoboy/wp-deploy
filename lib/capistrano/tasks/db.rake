@@ -24,7 +24,7 @@ namespace :db do
   \033[31m
   ========================================================================
 
-    WARNING: You're about to overwrite the database!
+    WARNING: You're about to overwrite a remote database!
     To continue, please enter the name of the database for this site.
 
     Datebase name:\033[0m \033[1m \033[34m #{database['database']} \033[0m \033[22m \033[31m
@@ -91,8 +91,12 @@ namespace :db do
 		on roles(:db) do
 
 			run_locally do
+
+                remote_url = YAML::load_file('config/environments.yml')[fetch(:stage).to_s]['stage_url']
+                local_url = YAML::load_file('config/settings.yml')['local_url']
+
 				execute :wp, "db import db_backups/#{fetch(:backup_filename)}.sql"
-				execute :wp, "search-replace #{fetch(:stage_url)} #{fetch(:wp_localurl)}"
+				execute :wp, "search-replace #{remote_url} #{local_url}"
 				execute :rm, "db_backups/#{fetch(:backup_filename)}.sql"
 
 				if Dir['db_backups/*'].empty?
@@ -120,8 +124,12 @@ namespace :db do
 			upload! "db_backups/#{fetch(:backup_filename)}.sql", "#{fetch(:backup_file)}"
 
 			within release_path do
+
+                remote_url = YAML::load_file('config/environments.yml')[fetch(:stage).to_s]['stage_url']
+                local_url = YAML::load_file('config/settings.yml')['local_url']
+
 				execute :wp, "db import #{fetch(:backup_file)}"
-				execute :wp, "search-replace #{fetch(:wp_localurl)} #{fetch(:stage_url)}"
+				execute :wp, "search-replace #{local_url} #{remote_url}"
 				execute :rm, "#{fetch(:backup_file)}"
 			end
 

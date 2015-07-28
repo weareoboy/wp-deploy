@@ -61,12 +61,10 @@ namespace :wp do
         \e[0m
         MSG
 
-
       end
 
     end
   end
-
 
   namespace :core do
     desc "Updates the WP core submodule to the latest tag"
