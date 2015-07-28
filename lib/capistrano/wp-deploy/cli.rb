@@ -179,4 +179,20 @@ Log in at:      #{siteurl}/wordpress/wp-admin/
 
     end
 
+    desc "config", "Regenerate configuration files using YAML details provided."
+    def config
+
+        # Parse required YAML
+        database = YAML::load_file('config/database.yml')['local']
+        settings = YAML::load_file('config/settings.yml')
+
+        # Create wp-config.php
+        secret_keys = run("curl -s -k https://api.wordpress.org/secret-key/1.1/salt", :capture => true)
+        db_config = ERB.new(File.read('config/templates/wp-config.php.erb')).result(binding)
+        File.open("wp-config.php", 'w') {|f| f.write(db_config) }
+
+        say_status("success", "Your database details have been updated.", :green)
+
+    end
+
 end
