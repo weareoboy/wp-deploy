@@ -8,7 +8,7 @@ class WpdCLI < Thor
         File.expand_path("../templates",__FILE__)
     end
 
-    desc "init DIRECTORY", "Initialises the WordPress project in the given directory"
+    desc "init [DIRECTORY]", "Initialises the WordPress project in the given directory"
     def init(path=nil)
 
         # If user provided a path, set install directory, else install in current dir
@@ -22,7 +22,7 @@ class WpdCLI < Thor
 
         # Check if the project needs initialising
         if Dir.exist?(installpath + '/config')
-            say "wp-deploy: Looks like you've already initialised this project! If you're trying to update your configuration using the settings in your .yml files, try running `bundle exec wpdeploy config` first.", :red
+            say "wp-deploy: Looks like you've already initialised this project! If you're trying to update your configuration using the settings in your .yml files, try running `wpdeploy config` first.", :red
             exit
         end
 
@@ -141,16 +141,12 @@ files in config/ and run `wpdeploy config` to apply them.
             git commit -m "Set up wp-deploy"
         ')
 
-        # Parse required YAML
-        database = YAML::load_file('config/database.yml')['local']
-        settings = YAML::load_file('config/settings.yml')
-
         # Create wp-config.php
-        secret_keys = run("curl -s -k https://api.wordpress.org/secret-key/1.1/salt", :capture => true)
-        db_config = ERB.new(File.read('config/templates/wp-config.php.erb')).result(binding)
-        File.open("wp-config.php", 'w') {|f| f.write(db_config) }
+        config
 
         # Setup vars for WP install
+
+        settings = YAML::load_file('config/settings.yml')
         siteurl = settings['local_url']
         title = settings['wp_sitename']
         user = settings['wp_user']
@@ -184,7 +180,7 @@ Log in at:      #{siteurl}/wordpress/wp-admin/
 
         # Parse required YAML
         database = YAML::load_file('config/database.yml')['local']
-        settings = YAML::load_file('config/settings.yml')
+        stage_url = YAML::load_file('config/settings.yml')['local_url']
 
         # Create wp-config.php
         secret_keys = run("curl -s -k https://api.wordpress.org/secret-key/1.1/salt", :capture => true)

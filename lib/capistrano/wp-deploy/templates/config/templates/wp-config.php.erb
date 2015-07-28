@@ -14,10 +14,10 @@ define('AUTOMATIC_UPDATER_DISABLED', true);
 
 $table_prefix  = 'wp_';
 
-define('WP_HOME', '<%= settings['local_url'] %>');
-define('WP_SITEURL','<%= settings['local_url'] %>/wordpress');
+define('WP_HOME', '<%= stage_url %>');
+define('WP_SITEURL','<%= stage_url %>/wordpress');
 
-define('WP_CONTENT_URL', '<%= settings['local_url'] %>/content');
+define('WP_CONTENT_URL', '<%= stage_url %>/content');
 define('WP_CONTENT_DIR', realpath(dirname(__DIR__) . '/content'));
 
 if ( !defined('ABSPATH') ){
