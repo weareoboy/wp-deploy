@@ -1,32 +1,27 @@
 <?php
 
-  require_once(ABSPATH . '../vendor/spyc.php');
+define('DB_NAME', '<%= database['database'] %>');
+define('DB_USER', '<%= database['username'] %>');
+define('DB_PASSWORD', '<%= database['password'] %>');
+define('DB_HOST', '<%= database['host'] %>');
 
-  $db_settings = spyc_load_file(ABSPATH . '../config/database.yml');
-  $wp_settings = spyc_load_file(ABSPATH . '../config/settings.yml');
-
-  define('DB_NAME', $db_settings['<%= currentEnv %>']['database']);
-  define('DB_USER', $db_settings['<%= currentEnv %>']['username']);
-  define('DB_PASSWORD', $db_settings['<%= currentEnv %>']['password']);
-  define('DB_HOST', $db_settings['<%= currentEnv %>']['host']);
-
-  define('DB_CHARSET', 'utf8');
-  define('DB_COLLATE', '');
-  define('WPLANG', '');
-  define('AUTOMATIC_UPDATER_DISABLED', true);
+define('DB_CHARSET', 'utf8');
+define('DB_COLLATE', '');
+define('WPLANG', '');
+define('AUTOMATIC_UPDATER_DISABLED', true);
 
 <%= secret_keys %>
 
-  $table_prefix  = 'wp_';
+$table_prefix  = 'wp_';
 
-  define('WP_HOME', $wp_settings['local_url']);
-  define('WP_SITEURL',$wp_settings['local_url'] . '/wordpress');
+define('WP_HOME', '<%= settings['local_url'] %>');
+define('WP_SITEURL','<%= settings['local_url'] %>/wordpress');
 
-  define('WP_CONTENT_URL', $wp_settings['local_url'] . '/content');
-  define('WP_CONTENT_DIR', realpath(dirname(__DIR__) . '/content'));
+define('WP_CONTENT_URL', '<%= settings['local_url'] %>/content');
+define('WP_CONTENT_DIR', realpath(dirname(__DIR__) . '/content'));
 
-  if ( !defined('ABSPATH') ){
-    define('ABSPATH', dirname(__FILE__) . '/');
-  }
+if ( !defined('ABSPATH') ){
+  define('ABSPATH', dirname(__FILE__) . '/');
+}
 
-  require_once(ABSPATH . 'wp-settings.php');
+require_once(ABSPATH . 'wp-settings.php');
